@@ -179,7 +179,11 @@ func (v Validate) ValidateMapCtx(ctx context.Context, data map[string]interface{
 					}
 				}
 			} else {
-				errs[field] = errors.New("The field: '" + field + "' is not a map to dive")
+				// child struct need validate as required if contains child field validation
+				err := v.VarWithKeyCtx(ctx, field, nil, "required")
+				if err != nil {
+					errs[field] = err
+				}
 			}
 		} else if ruleStr, ok := rule.(string); ok {
 			err := v.VarWithKeyCtx(ctx, field, data[field], ruleStr)

@@ -13493,6 +13493,47 @@ func TestValidate_ValidateMapCtxWithKeys(t *testing.T) {
 	}
 }
 
+func TestValidate_ValidateMapCtxWithKeysAbsentValue(t *testing.T) {
+	type args struct {
+		data   map[string]interface{}
+		rules  map[string]interface{}
+		errors map[string]interface{}
+	}
+	tests := []struct {
+		name string
+		args args
+		want int
+	}{
+		{
+			name: "test absent map value",
+			args: args{
+				data: map[string]interface{}{},
+				rules: map[string]interface{}{
+					"user": map[string]interface{}{
+						"email": "required,email",
+					},
+				},
+				errors: map[string]interface{}{
+					"user": "Key: 'user' Error:Field validation for 'user' failed on the 'required' tag",
+				},
+			},
+			want: 1,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			validate := New()
+			errs := validate.ValidateMapCtx(context.Background(), tt.args.data, tt.args.rules)
+			NotEqual(t, errs, nil)
+			Equal(t, len(errs), tt.want)
+			for key, err := range errs {
+				Equal(t, err.(ValidationErrors)[0].Error(), tt.args.errors[key])
+			}
+		})
+	}
+}
+
 func TestValidate_VarWithKey(t *testing.T) {
 	validate := New()
 	errs := validate.VarWithKey("email", "invalidemail", "required,email")
