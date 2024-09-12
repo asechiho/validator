@@ -9515,6 +9515,55 @@ func TestTranslationErrors(t *testing.T) {
 	Equal(t, err.Error(), "error: conflicting key 'required' rule 'Unknown' with text '{0} is a required field' for locale 'en', value being ignored")
 }
 
+func TestTranslationFieldErrors(t *testing.T) {
+	type SelfError struct {
+		FieldError
+	}
+
+	en := en.New()
+	uni := ut.New(en, en, fr.New())
+
+	trans, _ := uni.GetTranslator("en")
+	validate := New()
+	err := validate.RegisterTranslation("required", trans,
+		func(ut ut.Translator) (err error) {
+
+			// using this stype because multiple translation may have to be added for the full translation
+			if err = ut.Add("required", "{0} is a required field", false); err != nil {
+				return
+			}
+
+			return
+
+		}, func(ut ut.Translator, fe FieldError) string {
+
+			t, err := ut.T(fe.Tag(), fe.Field())
+			if err != nil {
+				fmt.Printf("warning: error translating FieldError: %#v", fe.(*fieldError))
+				return fe.(*fieldError).Error()
+			}
+
+			return t
+		})
+	Equal(t, err, nil)
+
+	err = validate.Var("", "required")
+	NotEqual(t, err, nil)
+
+	selfErr := ValidationErrors{}
+	errs, ok := err.(ValidationErrors)
+	Equal(t, ok, true)
+
+	for _, e := range errs {
+		selfErr = append(selfErr, SelfError{e})
+	}
+
+	NotEqual(t, selfErr.Error(), "")
+	Equal(t, selfErr.Translate(trans), ValidationErrorsTranslations{
+		"": " is a required field",
+	})
+}
+
 func TestStructFiltered(t *testing.T) {
 	p1 := func(ns []byte) bool {
 		if bytes.HasSuffix(ns, []byte("NoTag")) || bytes.HasSuffix(ns, []byte("Required")) {
@@ -12004,7 +12053,7 @@ func TestExcludedIf(t *testing.T) {
 
 	test11 := struct {
 		Field1 bool
-  		Field2 *string `validate:"excluded_if=Field1 false"`
+		Field2 *string `validate:"excluded_if=Field1 false"`
 	}{
 		Field1: false,
 		Field2: nil,
@@ -13368,6 +13417,100 @@ func TestValidate_ValidateMapCtx(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestValidate_ValidateMapCtxWithKeys(t *testing.T) {
+	type args struct {
+		data   map[string]interface{}
+		rules  map[string]interface{}
+		errors map[string]interface{}
+	}
+	tests := []struct {
+		name string
+		args args
+		want int
+	}{
+		{
+			name: "test invalid email",
+			args: args{
+				data: map[string]interface{}{
+					"email": "emailaddress",
+				},
+				rules: map[string]interface{}{
+					"email": "required,email",
+				},
+				errors: map[string]interface{}{
+					"email": "Key: 'email' Error:Field validation for 'email' failed on the 'email' tag",
+				},
+			},
+			want: 1,
+		},
+		{
+			name: "test multiple errors with capitalized keys",
+			args: args{
+				data: map[string]interface{}{
+					"Email": "emailaddress",
+					"Age":   15,
+				},
+				rules: map[string]interface{}{
+					"Email": "required,email",
+					"Age":   "number,gt=16",
+				},
+				errors: map[string]interface{}{
+					"Email": "Key: 'Email' Error:Field validation for 'Email' failed on the 'email' tag",
+					"Age":   "Key: 'Age' Error:Field validation for 'Age' failed on the 'gt' tag",
+				},
+			},
+			want: 2,
+		},
+		{
+			name: "test valid map data",
+			args: args{
+				data: map[string]interface{}{
+					"email": "email@example.com",
+					"age":   17,
+				},
+				rules: map[string]interface{}{
+					"email": "required,email",
+					"age":   "number,gt=16",
+				},
+				errors: map[string]interface{}{},
+			},
+			want: 0,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			validate := New()
+			errs := validate.ValidateMapCtx(context.Background(), tt.args.data, tt.args.rules)
+			NotEqual(t, errs, nil)
+			Equal(t, len(errs), tt.want)
+			for key, err := range errs {
+				Equal(t, err.(ValidationErrors)[0].Error(), tt.args.errors[key])
+			}
+		})
+	}
+}
+
+func TestValidate_VarWithKey(t *testing.T) {
+	validate := New()
+	errs := validate.VarWithKey("email", "invalidemail", "required,email")
+	NotEqual(t, errs, nil)
+	AssertError(t, errs, "email", "email", "email", "email", "email")
+
+	errs = validate.VarWithKey("email", "email@example.com", "required,email")
+	Equal(t, errs, nil)
+}
+
+func TestValidate_VarWithKeyCtx(t *testing.T) {
+	validate := New()
+	errs := validate.VarWithKeyCtx(context.Background(), "age", 15, "required,gt=16")
+	NotEqual(t, errs, nil)
+	AssertError(t, errs, "age", "age", "age", "age", "gt")
+
+	errs = validate.VarWithKey("age", 17, "required,gt=16")
+	Equal(t, errs, nil)
 }
 
 func TestMongoDBObjectIDFormatValidation(t *testing.T) {
