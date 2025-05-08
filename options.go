@@ -24,3 +24,9 @@ func WithPrivateFieldValidation() Option {
 		v.privateFieldValidation = true
 	}
 }
+
+func WithExcludeStructName() Option {
+	return func(v *Validate) {
+		v.excludeStructName = true
+	}
+}

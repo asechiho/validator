@@ -372,6 +372,29 @@ func TestStructLevelInvalidError(t *testing.T) {
 	Equal(t, fe.Type(), reflect.TypeOf(nil))
 }
 
+func TestStructLevelInvalidErrorExcludeStructName(t *testing.T) {
+	validate := New(WithExcludeStructName())
+	validate.RegisterStructValidation(StructLevelInvalidError, StructLevelInvalidErr{})
+
+	var test StructLevelInvalidErr
+
+	err := validate.Struct(test)
+	NotEqual(t, err, nil)
+
+	errs, ok := err.(ValidationErrors)
+	Equal(t, ok, true)
+
+	fe := errs[0]
+	Equal(t, fe.Field(), "Value")
+	Equal(t, fe.StructField(), "Value")
+	Equal(t, fe.Namespace(), "Value")
+	Equal(t, fe.StructNamespace(), "Value")
+	Equal(t, fe.Tag(), "required")
+	Equal(t, fe.ActualTag(), "required")
+	Equal(t, fe.Kind(), reflect.Invalid)
+	Equal(t, fe.Type(), reflect.TypeOf(nil))
+}
+
 func TestNameNamespace(t *testing.T) {
 	type Inner2Namespace struct {
 		String []string `validate:"dive,required" json:"JSONString"`

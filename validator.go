@@ -10,24 +10,25 @@ import (
 
 // per validate construct
 type validate struct {
-	v              *Validate
-	top            reflect.Value
-	ns             []byte
-	actualNs       []byte
-	errs           ValidationErrors
-	includeExclude map[string]struct{} // reset only if StructPartial or StructExcept are called, no need otherwise
-	ffn            FilterFunc
-	slflParent     reflect.Value // StructLevel & FieldLevel
-	slCurrent      reflect.Value // StructLevel & FieldLevel
-	flField        reflect.Value // StructLevel & FieldLevel
-	cf             *cField       // StructLevel & FieldLevel
-	ct             *cTag         // StructLevel & FieldLevel
-	misc           []byte        // misc reusable
-	str1           string        // misc reusable
-	str2           string        // misc reusable
-	fldIsPointer   bool          // StructLevel & FieldLevel
-	isPartial      bool
-	hasExcludes    bool
+	v                 *Validate
+	top               reflect.Value
+	ns                []byte
+	actualNs          []byte
+	errs              ValidationErrors
+	includeExclude    map[string]struct{} // reset only if StructPartial or StructExcept are called, no need otherwise
+	ffn               FilterFunc
+	slflParent        reflect.Value // StructLevel & FieldLevel
+	slCurrent         reflect.Value // StructLevel & FieldLevel
+	flField           reflect.Value // StructLevel & FieldLevel
+	cf                *cField       // StructLevel & FieldLevel
+	ct                *cTag         // StructLevel & FieldLevel
+	misc              []byte        // misc reusable
+	str1              string        // misc reusable
+	str2              string        // misc reusable
+	fldIsPointer      bool          // StructLevel & FieldLevel
+	isPartial         bool
+	hasExcludes       bool
+	excludeStructName bool
 }
 
 // parent and current will be the same the first run of validateStruct
@@ -37,12 +38,14 @@ func (v *validate) validateStruct(ctx context.Context, parent reflect.Value, cur
 		cs = v.v.extractStructCache(current, typ.Name())
 	}
 
-	if len(ns) == 0 && len(cs.name) != 0 {
-		ns = append(ns, cs.name...)
-		ns = append(ns, '.')
+	if !v.v.excludeStructName {
+		if len(ns) == 0 && len(cs.name) != 0 {
+			ns = append(ns, cs.name...)
+			ns = append(ns, '.')
 
-		structNs = append(structNs, cs.name...)
-		structNs = append(structNs, '.')
+			structNs = append(structNs, cs.name...)
+			structNs = append(structNs, '.')
+		}
 	}
 
 	// ct is nil on top level struct, and structs as fields that have no tag info
