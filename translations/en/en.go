@@ -1075,6 +1075,26 @@ func RegisterDefaultTranslations(v *validator.Validate, trans ut.Translator) (er
 			override:    false,
 		},
 		{
+			tag:         "alphaspace",
+			translation: "{0} can only contain alphabetic and space characters",
+			override:    false,
+		},
+		{
+			tag:         "alphanumspace",
+			translation: "{0} can only contain alphanumeric and space characters",
+			override:    false,
+		},
+		{
+			tag:         "alphaunicode",
+			translation: "{0} can only contain unicode alphabetic characters",
+			override:    false,
+		},
+		{
+			tag:         "alphanumunicode",
+			translation: "{0} can only contain unicode alphanumeric characters",
+			override:    false,
+		},
+		{
 			tag:         "numeric",
 			translation: "{0} must be a valid numeric value",
 			override:    false,
@@ -1227,6 +1247,11 @@ func RegisterDefaultTranslations(v *validator.Validate, trans ut.Translator) (er
 		{
 			tag:         "issn",
 			translation: "{0} must be a valid ISSN number",
+			override:    false,
+		},
+		{
+			tag:         "urn_rfc2141",
+			translation: "{0} must be a valid RFC 2141 URN",
 			override:    false,
 		},
 		{
@@ -1442,6 +1467,11 @@ func RegisterDefaultTranslations(v *validator.Validate, trans ut.Translator) (er
 			},
 		},
 		{
+			tag:         "timezone",
+			translation: "{0} must be a valid time zone",
+			override:    false,
+		},
+		{
 			tag:         "postcode_iso3166_alpha2",
 			translation: "{0} does not match postcode format of {1} country",
 			override:    false,
@@ -1480,8 +1510,18 @@ func RegisterDefaultTranslations(v *validator.Validate, trans ut.Translator) (er
 			override:    false,
 		},
 		{
+			tag:         "mimetype",
+			translation: "{0} must be a valid MIME type",
+			override:    false,
+		},
+		{
 			tag:         "cve",
 			translation: "{0} must be a valid cve identifier",
+			override:    false,
+		},
+		{
+			tag:         "bcp47_strict_language_tag",
+			translation: "{0} must be a valid BCP 47 language tag",
 			override:    false,
 		},
 		{
