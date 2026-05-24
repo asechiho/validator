@@ -6344,32 +6344,32 @@ func TestMIMETypeValidation(t *testing.T) {
 	}
 
 	tests := []struct {
-		title       string
-		param       string
-		tag         string
-		expected    bool
-		createFile  func()
+		title      string
+		param      string
+		tag        string
+		expected   bool
+		createFile func()
 	}{
 		{
-			title:       "empty path",
-			param:       paths["empty"],
-			tag:         "mimetype=image/png",
-			expected:    false,
-			createFile:  func() {},
+			title:      "empty path",
+			param:      paths["empty"],
+			tag:        "mimetype=image/png",
+			expected:   false,
+			createFile: func() {},
 		},
 		{
-			title:       "directory, not a file",
-			param:       paths["directory"],
-			tag:         "mimetype=image/png",
-			expected:    false,
-			createFile:  func() {},
+			title:      "directory, not a file",
+			param:      paths["directory"],
+			tag:        "mimetype=image/png",
+			expected:   false,
+			createFile: func() {},
 		},
 		{
-			title:       "missing file",
-			param:       paths["missing"],
-			tag:         "mimetype=image/png",
-			expected:    false,
-			createFile:  func() {},
+			title:      "missing file",
+			param:      paths["missing"],
+			tag:        "mimetype=image/png",
+			expected:   false,
+			createFile: func() {},
 		},
 		{
 			title:    "exact png match",
@@ -6424,11 +6424,11 @@ func TestMIMETypeValidation(t *testing.T) {
 			},
 		},
 		{
-			title:       "type mismatch",
-			param:       paths["go"],
-			tag:         "mimetype=image/*",
-			expected:    false,
-			createFile:  func() {},
+			title:      "type mismatch",
+			param:      paths["go"],
+			tag:        "mimetype=image/*",
+			expected:   false,
+			createFile: func() {},
 		},
 		{
 			title:    "subtype mismatch",
@@ -6448,11 +6448,11 @@ func TestMIMETypeValidation(t *testing.T) {
 			},
 		},
 		{
-			title:       "invalid validator param missing subtype",
-			param:       paths["go"],
-			tag:         "mimetype=image",
-			expected:    false,
-			createFile:  func() {},
+			title:      "invalid validator param missing subtype",
+			param:      paths["go"],
+			tag:        "mimetype=image",
+			expected:   false,
+			createFile: func() {},
 		},
 	}
 
@@ -10415,16 +10415,13 @@ func TestTranslationFieldErrors(t *testing.T) {
 	validate := New()
 	err := validate.RegisterTranslation("required", trans,
 		func(ut ut.Translator) (err error) {
-
 			// using this stype because multiple translation may have to be added for the full translation
 			if err = ut.Add("required", "{0} is a required field", false); err != nil {
 				return
 			}
 
 			return
-
 		}, func(ut ut.Translator, fe FieldError) string {
-
 			t, err := ut.T(fe.Tag(), fe.Field())
 			if err != nil {
 				fmt.Printf("warning: error translating FieldError: %#v", fe.(*fieldError))
@@ -14893,6 +14890,8 @@ func TestValidate_ValidateMapCtxWithKeysAbsentValue(t *testing.T) {
 			}
 		})
 	}
+}
+
 // TestValidateMapWithCrossFieldValidators tests that cross-field validators
 // like required_if, required_unless, etc. don't panic when used with ValidateMap.
 // This is a regression test for issue #893.
